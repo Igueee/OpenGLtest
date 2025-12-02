@@ -20,6 +20,7 @@
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow *window);
 
 int main() {
     // Initialize the GLFW library. Required before any other GLFW calls.
@@ -48,16 +49,29 @@ int main() {
 
     // No GLAD (or GLEW) initialization needed on macOS when using system OpenGL headers.
     
+    float vertices[] = {
+        -0.5f, -0.5f, 0.0f,
+         0.5f, -0.5f, 0.0f,
+         0.0f,  0.5f, 0.0f
+    };
+    
+    unsigned int VBO;
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    
     // Set the viewport to cover the whole window. Typically updated on resize.
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     // Main loop: run until the user closes the window.
     while (!glfwWindowShouldClose(window)) {
-
         
-        // If you want to clear to a color each frame, uncomment these lines:
-        // glClearColor(0.1f, 0.2f, 0.3f, 1.0f);   // RGBA clear color
-        // glClear(GL_COLOR_BUFFER_BIT);           // Clear the color buffer
-
+        // Check if user pressed escape to close the window
+        processInput(window);
+        
+        // Rendering
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        
         // Swap front and back buffers (present the frame).
         glfwSwapBuffers(window);
 
@@ -75,3 +89,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height){
     glViewport(0, 0, width, height);
 }
 
+void processInput(GLFWwindow *window){
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
+    }
+}
