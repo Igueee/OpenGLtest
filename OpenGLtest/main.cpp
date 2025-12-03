@@ -22,12 +22,22 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 
-const char *vertexShaderSource = "#version 320 core\n"
+const char *vertexShaderSource = "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
     "void main()\n"
     "{\n"
     "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
     "}\0";
+
+const char *fragmentShaderSource = "#version 330 core\n"
+    "out vec4 FragColor;\n"
+    "void main(){\n"
+    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+    "}\0";
+
+int success;
+char infoLog[512];
+
 
 int main() {
     // Initialize the GLFW library. Required before any other GLFW calls.
@@ -39,7 +49,7 @@ int main() {
     // Request a 3.2 Core Profile OpenGL context on macOS.
     // The combination of these hints ensures we get a forward-compatible core profile.
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);           // OpenGL major version 3
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);           // OpenGL minor version 2 (=> 3.2)
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);           // OpenGL minor version 3
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // Core profile (no deprecated fixed-function)
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);     // Required on macOS to get a core profile context
 
@@ -56,19 +66,85 @@ int main() {
 
     // No GLAD (or GLEW) initialization needed on macOS when using system OpenGL headers.
     
+    // Compile Vertex Shader
+    unsigned int vertexShader;
+    vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glCompileShader(vertexShader);
+    
+    // Check if vertex shader compiled successfully
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+    
+    // Compile fragment shader
+    unsigned int fragmentShader;
+    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+    glCompileShader(fragmentShader);
+    
+    // Check if fragment shader compiled successfully
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+    
+    // Create shader program and link shaders and delete them
+    unsigned int shaderProgram;
+    shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+    
+    // Check if program linked successfully
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (!success) {
+        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+    }
+    
+    // Define vertices
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-         0.0f,  0.5f, 0.0f
+        -0.5f, -0.5f, 0.0f, // bottom left
+         0.5f, -0.5f, 0.0f, // bottom right
+         0.5f,  0.5f, 0.0f, // top right
+        -0.5f,  0.5f, 0.0f  // top left
+    };
+    unsigned int indices[] = {
+        2, 1, 3, // first triangle
+        1, 0, 3  // second triangle
     };
     
-    unsigned int VBO;
+    // Create Vertex Buffer Object, Vertex Array Object and Element Buffer Object
+    unsigned int VBO, VAO, EBO;
     glGenBuffers(1, &VBO);
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &EBO);
+    
+    // Bind Vertex Array
+    glBindVertexArray(VAO);
+    
+    // Copy the vertices and indices to the buffers
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    
+    // Tell OpenGL how to interpret vertex data
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
     
     // Set the viewport to cover the whole window. Typically updated on resize.
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    
+    // Set drawing mode
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    
     // Main loop: run until the user closes the window.
     while (!glfwWindowShouldClose(window)) {
         
@@ -78,6 +154,12 @@ int main() {
         // Rendering
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+        
+        // Draw Object
+        glUseProgram(shaderProgram);
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
         
         // Swap front and back buffers (present the frame).
         glfwSwapBuffers(window);
