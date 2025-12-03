@@ -109,34 +109,41 @@ int main() {
     }
     
     // Define vertices
-    float vertices[] = {
+    float triangle1[] = {
          0.0f, -0.5f, 0.0f, // intersection
-         0.5f,  0.5f, 0.0f, // top right
-         1.0f, -0.5f, 0.0f, // bottom right
         -0.5f,  0.5f, 0.0f, // top left
         -1.0f, -0.5f, 0.0f  // bottom left
     };
-    unsigned int indices[] = {
-        0, 1, 2, // first triangle
-        0, 3, 4  // second triangle
+    float triangle2[] = {
+        0.0f, -0.5f, 0.0f, // intersection
+        0.5f,  0.5f, 0.0f, // top right
+        1.0f, -0.5f, 0.0f // bottom right
     };
     
     // Create Vertex Buffer Object, Vertex Array Object and Element Buffer Object
-    unsigned int VBO, VAO, EBO;
-    glGenBuffers(1, &VBO);
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &EBO);
+    unsigned int VBOs[2], VAOs[2];
+    glGenBuffers(2, VBOs);
+    glGenVertexArrays(2, VAOs);
     
-    // Bind Vertex Array
-    glBindVertexArray(VAO);
+    // Bind VAO 1
+    glBindVertexArray(VAOs[0]);
     
-    // Copy the vertices and indices to the buffers
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    // Copy the vertices to the 1st buffer
+    glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(triangle1), triangle1, GL_STATIC_DRAW);
     
-    // Tell OpenGL how to interpret vertex data
+    // Tell OpenGL how to interpret vertex data for 1st buffer
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    
+    // Bind VAO 2
+    glBindVertexArray(VAOs[1]);
+    
+    // Copy the vertices to the 2nd buffer
+    glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(triangle2), triangle2, GL_STATIC_DRAW);
+    
+    // Tell OpenGL how to interpret vertex data for 2nd buffer
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     
@@ -158,8 +165,10 @@ int main() {
         
         // Draw Object
         glUseProgram(shaderProgram);
-        glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(VAOs[0]);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindVertexArray(VAOs[1]);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
         glBindVertexArray(0);
         
         // Swap front and back buffers (present the frame).
