@@ -24,25 +24,30 @@ void processInput(GLFWwindow *window);
 
 const char *vertexShaderSource = "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
+    "out vec4 vertexColor\n;"
     "void main()\n"
     "{\n"
     "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+    "   vertexColor = vec4(0.5, 0.0, 0.0, 1.0);\n"
     "}\0";
 
 const char *fragmentShader0Source = "#version 330 core\n"
     "out vec4 FragColor;\n"
+    "uniform vec4 ourColor;\n"
     "void main(){\n"
-    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+    "   FragColor = ourColor;\n"
     "}\0";
 
 const char *fragmentShader1Source = "#version 330 core\n"
     "out vec4 FragColor;\n"
+    "uniform vec4 ourColor;\n"
     "void main(){\n"
-    "   FragColor = vec4(1.0f, 1.0f, 0.0f, 1.0f);\n"
+    "   FragColor = ourColor;\n"
     "}\0";
 
 int success;
 char infoLog[512];
+int vertexColorLocation[2];
 
 
 int main() {
@@ -85,20 +90,20 @@ int main() {
         std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
     }
     
-    // Compile fragment shader 1
+    // Compile fragment shader 0
     unsigned int fragmentShader0;
     fragmentShader0 = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader0, 1, &fragmentShader0Source, NULL);
     glCompileShader(fragmentShader0);
     
-    // Check if fragment shader 1 compiled successfully
+    // Check if fragment shader 0 compiled successfully
     glGetShaderiv(fragmentShader0, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(fragmentShader0, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::FRAGMENT::0::COMPILATION_FAILED\n" << infoLog << std::endl;
     }
     
-    // Compile fragment shader 2
+    // Compile fragment shader 1
     unsigned int fragmentShader1;
     fragmentShader1 = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader1, 1, &fragmentShader1Source, NULL);
@@ -136,6 +141,10 @@ int main() {
         glGetProgramInfoLog(shaderProgram[1], 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::PROGRAM::1::LINKING_FAILED\n" << infoLog << std::endl;
     }
+    
+    // Get uniform locations
+    vertexColorLocation[0] = glGetUniformLocation(shaderProgram[0], "ourColor");
+    vertexColorLocation[1] = glGetUniformLocation(shaderProgram[1], "ourColor");
     
     // Define vertices
     float triangle1[] = {
@@ -192,11 +201,17 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         
+        // Get shader color value based on time
+        float timeValue = glfwGetTime();
+        float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
+        
         // Draw Object
         glUseProgram(shaderProgram[0]);
+        glUniform4f(vertexColorLocation[0], 0.0f, greenValue, 0.0f, 1.0f);
         glBindVertexArray(VAOs[0]);
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glUseProgram(shaderProgram[1]);
+        glUniform4f(vertexColorLocation[1], 0.0f, greenValue, 0.0f, 1.0f);
         glBindVertexArray(VAOs[1]);
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glBindVertexArray(0);
