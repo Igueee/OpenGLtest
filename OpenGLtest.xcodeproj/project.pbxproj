@@ -14,12 +14,12 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		9A6ECA6B2EDE9F7300DFB20D /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
+			buildActionMask = 12;
+			dstPath = "";
+			dstSubfolderSpec = 16;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 1;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -29,9 +29,23 @@
 		9A6ECA7B2EDEA2AE00DFB20D /* libglfw.3.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libglfw.3.4.dylib; path = ../../../../opt/homebrew/Cellar/glfw/3.4/lib/libglfw.3.4.dylib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		9A54B4A92EE9082300553385 /* Exceptions for "OpenGLtest" folder in "Copy Files" phase from "OpenGLtest" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = 9A6ECA6B2EDE9F7300DFB20D /* CopyFiles */;
+			membershipExceptions = (
+				shader.fs,
+				shader.vs,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		9A6ECA6F2EDE9F7300DFB20D /* OpenGLtest */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				9A54B4A92EE9082300553385 /* Exceptions for "OpenGLtest" folder in "Copy Files" phase from "OpenGLtest" target */,
+			);
 			path = OpenGLtest;
 			sourceTree = "<group>";
 		};
